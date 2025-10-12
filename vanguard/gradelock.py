@@ -4,6 +4,7 @@ from gametools import GameEnvironment, VanguardCard
 
 STARTER = VanguardCard("V Starter", 0, max = 0)
 GRADE_1 = VanguardCard("Grade 1", 1)
+BRANWEN = VanguardCard("Branwen", 1, min = 4, max = 4)
 GRADE_2 = VanguardCard("Grade 2", 2)
 GRADE_3 = VanguardCard("Grade 3", 3)
 
@@ -11,7 +12,7 @@ TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
 OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
 
 # Put cards in order of ride priority
-cards = [STARTER, TRIGGER, OVER, GRADE_1, GRADE_2, GRADE_3]
+cards = [STARTER, TRIGGER, OVER, BRANWEN, GRADE_1, GRADE_2, GRADE_3]
 
 def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     def DebugPrint(text: str):
@@ -30,14 +31,19 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     # Mulligan step
     hand = {card: 0 for card in main_deck}
     card: VanguardCard
-    for card in [GRADE_1, GRADE_2, GRADE_3]:
-        if card in premulligan:
-            hand[card] += 1
-            premulligan.remove(card)
+    for grade in [1,2,3]:
+        for card in hand:
+            if card.grade != grade:
+                continue
+            if card in premulligan:
+                hand[card] += 1
+                premulligan.remove(card)
+                break
 
     for i, _ in enumerate(premulligan):
         hand[postmulligan[i]] += 1
-
+    if (hand[GRADE_1] + hand[BRANWEN] > 0) and (hand[GRADE_2] > 0) and (hand[GRADE_3] > 0):
+        return 1
     for card in hand:
         main_deck[card] -= hand[card]
     DebugPrint("Post mulligan: " + str({card: hand[card] for card in hand if hand[card] > 0}))
@@ -50,6 +56,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         main_deck[draw] -= 1
         hand[draw] += 1
         DebugPrint(f"Drew {draw}")
+
         # Ride step
         ride_target = []
         for card in hand:
@@ -66,11 +73,25 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                 main_deck[draw] -= 1
                 hand[draw] += 1
                 DebugPrint(f"Drew {draw} off of starter")
+            if vanguard == BRANWEN:
+                search_range = random.sample(cards, k = 5, counts=list(main_deck.values()))
+                if GRADE_3 in search_range:
+                    hand[GRADE_3] += 1
+                    main_deck[GRADE_3] -= 1
+                    DebugPrint(f"Added grade 3 from Branwen clone")
         if vanguard.grade == 3:
             return 1
-        DebugPrint(hand)
+        DebugPrint("Hand: " + str({card: hand[card] for card in hand if hand[card] > 0}))
 
         # Main phase
+        while hand[BRANWEN] > 0:
+            hand[BRANWEN] -= 1
+            DebugPrint(f"Called Branwen clone")
+            search_range = random.sample(cards, k = 5, counts=list(main_deck.values()))
+            if GRADE_3 in search_range:
+                hand[GRADE_3] += 1
+                main_deck[GRADE_3] -= 1
+                DebugPrint(f"Added grade 3 from Branwen clone")
 
         # Battle phase
         drives = 1 if vanguard.grade < 3 else 2
