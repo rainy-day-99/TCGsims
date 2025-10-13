@@ -2,10 +2,6 @@ import random as random
 import numpy as np
 from gametools import GameEnvironment, VanguardCard
 
-STARTER = VanguardCard("Ride Deck G0", 0, max = 0)
-RIDE_G1 = VanguardCard("Ride Deck G1", 1, max = 0)
-RIDE_G2 = VanguardCard("Ride Deck G2", 2, max = 0)
-RIDE_G3 = VanguardCard("Ride Deck G3", 3, max = 0)
 
 TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
 OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
@@ -14,16 +10,12 @@ PERSONA = VanguardCard("Persona Ride", 3, min = 3, max = 3)
 
 NORMAL = VanguardCard("Normal Unit", 2)
 
-cards = [NORMAL, TRIGGER, OVER, SENTINEL, PERSONA, 
-         STARTER, RIDE_G1, RIDE_G2, RIDE_G3]
+cards = [NORMAL, TRIGGER, OVER, SENTINEL, PERSONA]
 
 def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     def DebugPrint(text: str):
         if debug:
             print(text)
-
-    ride_deck = [RIDE_G3, RIDE_G2, RIDE_G1]
-    vanguard = STARTER
     
     startingHandSize = 5
     cards = list(main_deck.keys())
@@ -52,6 +44,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         main_deck[card] -= hand[card]
     DebugPrint("Post mulligan: " + str({card: hand[card] for card in hand if hand[card] > 0}))
     
+    vanguard_grade = 0
     lastTurn = 3
     energy = 0 if goingSecond else -3
     opponents_grade = 1 if goingSecond else 0
@@ -63,10 +56,10 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         DebugPrint(f"Drew {draw}")
         # Ride step
         energy += 3
-        if ride_deck:
-            vanguard = ride_deck.pop()
-            DebugPrint(f"Rode {vanguard}")
-            if vanguard.grade == 1 and goingSecond:
+        if vanguard_grade < 3:
+            vanguard_grade += 1
+            DebugPrint(f"Rode up to grade {vanguard_grade}")
+            if vanguard_grade == 1 and goingSecond:
                 draw = random.choices(cards, weights=list(main_deck.values()), k=1)[0]
                 main_deck[draw] -= 1
                 hand[draw] += 1
@@ -82,7 +75,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         # Main phase
 
         # Battle phase
-        drives = 1 if vanguard.grade < 3 else 2
+        drives = 1 if vanguard_grade < 3 else 2
         if opponents_grade == 0:
             drives = 0
         for _ in range(drives):

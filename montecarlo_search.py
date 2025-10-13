@@ -1,5 +1,5 @@
 from scipy.stats import ttest_ind
-from vanguard.gradelock import test as game
+from vanguard.Lianorn.rosarium import lianorn as game
 import itertools
 import numpy as np
 from time import time
@@ -8,7 +8,7 @@ from math import trunc
 previousBestDeck = game.CreateInitialDeck()
 
 minNumberOfSims = 2000
-maxNumberOfSims = 400000
+maxNumberOfSims = minNumberOfSims**2
 simIncrement = 1000
 alpha = 0.01
 testResults = {previousBestDeck: []}
