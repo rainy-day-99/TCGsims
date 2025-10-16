@@ -7,7 +7,7 @@ OVER = VanguardCard("Blessfavor", 0, trigger = True, min = 1, max = 1)
 SENTINEL = VanguardCard("Perfect Guard", 1, min = 4, max = 4)
 
 NORMAL = VanguardCard("Normal Unit", 1)
-ROSARIUM = VanguardCard("Rosarium / Mollmoire", 1, min = 4, max = 8)
+ROSARIUM = VanguardCard("Rosarium / Mollmoire", 1, min = 0, max = 8)
 
 REGALIS = VanguardCard("Fire Regalis", 3, unit = False, min = 1, max = 1)
 SINCERIETE = VanguardCard("Sinceriete", 1, min = 4, max = 4)
@@ -15,10 +15,11 @@ LAGRACE = VanguardCard("Lagrace", 2, min = 4, max = 4)
 TRAUMEND = VanguardCard("Lianorn Traumend", 3, min = 3, max = 3)
 VIVACE = VanguardCard("Lianorn Vivace", 3, min = 2, max = 2)
 
-cards = [NORMAL, SINCERIETE, ROSARIUM, LAGRACE, TRAUMEND, VIVACE, REGALIS, SENTINEL, TRIGGER, OVER]
+cards = [NORMAL, SINCERIETE, ROSARIUM, LAGRACE, TRAUMEND, VIVACE, 
+         REGALIS, SENTINEL, TRIGGER, OVER]
 
-# Using the setup of unisonDress.py, how many Rosarium Fairies and Mollmoire do we need?
-# We need at least one Rosarium on turn 3, two is fine, but three or more are unnecessary
+# Using the conditions from unisonDress.py, how many Rosarium Fairies and Mollmoires do we need?
+# Set-up to aim for exactly two: one isn't the best, and three is too many
 
 def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     def DebugPrint(text: str):
