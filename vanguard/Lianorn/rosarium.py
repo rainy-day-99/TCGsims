@@ -7,13 +7,13 @@ OVER = VanguardCard("Blessfavor", 0, trigger = True, min = 1, max = 1)
 SENTINEL = VanguardCard("Perfect Guard", 1, min = 4, max = 4)
 
 NORMAL = VanguardCard("Normal Unit", 1)
-ROSARIUM = VanguardCard("Rosarium / Mollmoire", 1, min = 0, max = 8)
+ROSARIUM = VanguardCard("Rosarium / Mollmoire", 1, min = 4, max = 8)
 
 REGALIS = VanguardCard("Fire Regalis", 3, unit = False, min = 1, max = 1)
 SINCERIETE = VanguardCard("Sinceriete", 1, min = 4, max = 4)
-LAGRACE = VanguardCard("Lagrace", 2, min = 4, max = 4)
+LAGRACE = VanguardCard("Lagrace", 2, min = 0, max = 0)
 TRAUMEND = VanguardCard("Lianorn Traumend", 3, min = 3, max = 3)
-VIVACE = VanguardCard("Lianorn Vivace", 3, min = 2, max = 2)
+VIVACE = VanguardCard("Lianorn Vivace", 3, min = 0, max = 0)
 
 cards = [NORMAL, SINCERIETE, ROSARIUM, LAGRACE, TRAUMEND, VIVACE, 
          REGALIS, SENTINEL, TRIGGER, OVER]
@@ -133,9 +133,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                 DebugPrint(f"Whiffed search, drew {search_space[0]} instead")
 
         if turn + 1 == lastTurn:
-            if hand[ROSARIUM] == 2:
-                return 1
-            return 0
+            return hand[ROSARIUM]
 
         # Battle phase
         drives = 1 if vanguard_grade < 3 else 3
@@ -171,13 +169,13 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             main_deck[draw] -= 1
             hand[draw] += 1
     
-def Threshold(data: list):
-    target = 2
-    distance = abs(target - np.mean(data))
-    score = 10**(-distance)
-    return score
+def Threshold(data: np.array):
+    minimum = 2
+    maximum = 2
+    masked_data = np.where((data >= minimum)*(data <= maximum), 1, 0)
+    return (np.mean(masked_data))
 
 def Mean(data: list):
     return np.mean(data)
 
-lianorn = GameEnvironment(cards, 50, RunGame, Mean)
+lianorn = GameEnvironment(cards, 50, RunGame, Threshold)
