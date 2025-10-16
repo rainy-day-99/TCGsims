@@ -42,7 +42,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     for card in premulligan:
         if card.isTrigger:
             continue
-        if card.grade in [VIVACE, TRAUMEND]:
+        if card == VIVACE or card == TRAUMEND:
             continue
         if card in [SENTINEL, LAGRACE, FESTA] and hand[card] > 0:
             continue
