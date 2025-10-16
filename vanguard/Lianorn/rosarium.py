@@ -7,7 +7,9 @@ OVER = VanguardCard("Blessfavor", 0, trigger = True, min = 1, max = 1)
 SENTINEL = VanguardCard("Perfect Guard", 1, min = 4, max = 4)
 
 NORMAL = VanguardCard("Normal Unit", 1)
-ROSARIUM = VanguardCard("Rosarium / Mollmoire", 1, min = 4, max = 8)
+ROSARIUM = VanguardCard("Rosarium", 1, min = 4, max = 4)
+MOLLMOIRE = VanguardCard("Mollmoire", 2, min = 0, max = 4)
+FESTA = VanguardCard("Festa!", 3, unit = False, min = 0, max = 3)
 
 REGALIS = VanguardCard("Fire Regalis", 3, unit = False, min = 1, max = 1)
 SINCERIETE = VanguardCard("Sinceriete", 1, min = 4, max = 4)
@@ -15,7 +17,7 @@ LAGRACE = VanguardCard("Lagrace", 2, min = 0, max = 0)
 TRAUMEND = VanguardCard("Lianorn Traumend", 3, min = 3, max = 3)
 VIVACE = VanguardCard("Lianorn Vivace", 3, min = 0, max = 0)
 
-cards = [NORMAL, SINCERIETE, ROSARIUM, LAGRACE, TRAUMEND, VIVACE, 
+cards = [NORMAL, SINCERIETE, ROSARIUM, MOLLMOIRE, FESTA, LAGRACE, TRAUMEND, VIVACE, 
          REGALIS, SENTINEL, TRIGGER, OVER]
 
 # Using the conditions from unisonDress.py, how many Rosarium Fairies and Mollmoires do we need?
@@ -42,7 +44,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             continue
         if card.grade in [VIVACE, TRAUMEND]:
             continue
-        if card in [SENTINEL, LAGRACE] and hand[card] > 0:
+        if card in [SENTINEL, LAGRACE, FESTA] and hand[card] > 0:
             continue
         premulligan.remove(card)
         hand[card] += 1
@@ -105,6 +107,9 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             if ROSARIUM in search_space:
                 hand[ROSARIUM] += 1
                 main_deck[ROSARIUM] -= 1
+            elif MOLLMOIRE in search_space:
+                hand[MOLLMOIRE] += 1
+                main_deck[MOLLMOIRE] -= 1
             elif LAGRACE in search_space and hand[LAGRACE] < 1:
                 hand[LAGRACE] += 1
                 main_deck[LAGRACE] -= 1
@@ -131,9 +136,15 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                 main_deck[draw] -= 1
                 hand[draw] += 1
                 DebugPrint(f"Whiffed search, drew {search_space[0]} instead")
+        if vanguard_grade == 3 and hand[FESTA] > 0:
+            hand[FESTA] -= 1
+            search_space = random.sample(cards, k = 7, counts=list(main_deck.values()))
+            for _ in range(min(search_space.count(ROSARIUM), 2)):
+                main_deck[ROSARIUM] -= 1
+                hand[ROSARIUM] += 1
 
         if turn + 1 == lastTurn:
-            return hand[ROSARIUM]
+            return (hand[ROSARIUM] + hand[MOLLMOIRE])
 
         # Battle phase
         drives = 1 if vanguard_grade < 3 else 3
