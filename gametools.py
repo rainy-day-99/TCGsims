@@ -61,7 +61,7 @@ class Decklist:
                  self.game = 'Magic'
             else:
                  self.game = 'n/a'
-            self.last_error = ''
+            self.last_error = None
 
       def clone(self):
            cloned_deck = Decklist(list(self.recipe.keys()), self.max, list(self.recipe.values()))
