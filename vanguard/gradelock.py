@@ -4,7 +4,7 @@ from gametools import GameEnvironment, VanguardCard
 
 STARTER = VanguardCard("V Starter", 0, max = 0)
 GRADE_1 = VanguardCard("Grade 1", 1)
-BRANWEN = VanguardCard("Branwen", 1, min = 4, max = 4)
+BRANWEN = VanguardCard("Branwen", 1, min = 0, max = 0)
 GRADE_2 = VanguardCard("Grade 2", 2)
 GRADE_3 = VanguardCard("Grade 3", 3)
 
@@ -120,7 +120,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
 
     return 0
 
-def Mean(data: list):
+def Mean(data: np.array):
     mu = np.mean(data)
     return mu
 

@@ -1,11 +1,7 @@
 # Scratchwork to make sure individual bits of code work the way I think it will
-d = {'a': 5, 'b': 7}
-e = d.copy()
+from math import trunc
 
-print(str(d) + 'c')
-print(e)
-
-e['b'] -= 1
-
-print(d)
-print(e)
+print(f"{0.15}: \t{trunc(0.15)}")
+print(f"{1.5}: \t{trunc(1.5)}")
+print(f"{15}: \t{trunc(15)}")
+print(f"{150}: \t{trunc(150)}")

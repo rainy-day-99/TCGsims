@@ -1,44 +1,67 @@
-from scipy.stats import ttest_ind
-from vanguard.Lianorn.rosarium import lianorn as game
+from scipy.stats import ttest_ind, norm
+from vanguard.gradelock import test as game
+from gametools import Decklist
 import itertools
 import numpy as np
 from time import time
 from math import trunc
 
-previousBestDeck = game.CreateInitialDeck()
+previousBestDeck = Decklist(game.cards, game.maxDeckSize)
+testResults = {previousBestDeck: game.PlayGames(previousBestDeck, 2000)}
 
+alpha = 0.05
 minNumberOfSims = 2000
-maxNumberOfSims = minNumberOfSims**2
-simIncrement = 1000
-alpha = 0.01
-testResults = {previousBestDeck: []}
 
-bestDecksFound = 0
+if max(testResults[previousBestDeck]) == 1 and min(testResults[previousBestDeck]) == 0:
+    margin_of_error = 0.0005
+else:
+    margin_of_error = 0.0005*(10**(len(str(np.mean(testResults[previousBestDeck])).split('.')[0])))
+p = 0.5
+z = norm.interval(1-alpha)[1]
+maxNumberOfSims = round(p*(1-p)*(z/margin_of_error)**2)
+
+simIncrement = 1000
+
 stillSearching = True
 search_start = time()
 while stillSearching:
     neighborhood = []
-    print("Creating neighborhood...")
     newDecksMade = 0 
     test_duration = len(testResults[previousBestDeck])
 
-    # Cross neighborhood of best deck. Swap every card for another card to generate neighborhood
-    for add, drop in itertools.product(range(len(game.cards)), repeat = 2):
-        newAmounts = [i for i in previousBestDeck]
-        newAmounts[add] += 1
-        newAmounts[drop] -= 1
-        newDeck = tuple(newAmounts)
-        if not game.CheckIfValid(newDeck):
-            continue
-        if newDeck not in testResults:
-            testResults[newDeck] = []
-            newDecksMade += 1
-        if newDeck not in neighborhood:
-            neighborhood.append(newDeck)
+    if test_duration < maxNumberOfSims:
+        print("Creating cross neighborhood...")
+        # Cross neighborhood of best deck. Swap every card for another card to generate neighborhood
+        for add, drop in itertools.product(game.cards, repeat = 2):
+            nearby_deck = previousBestDeck.clone()
+            nearby_deck.recipe[add] += 1
+            nearby_deck.recipe[drop] -= 1
+            if not nearby_deck.isValid:
+                continue
+            if nearby_deck not in testResults:
+                testResults[nearby_deck] = np.array([])
+                newDecksMade += 1
+            if nearby_deck not in neighborhood:
+                neighborhood.append(nearby_deck)
+    else:
+        print("Creating star neighborhood...")
+        # Star neighborhood of best deck. Every card can increase or decrease by one
+        for alteration in itertools.combinations_with_replacement([-1,0,1], len(game.cards)):
+            nearby_deck = previousBestDeck.clone()
+            for increment, card in zip(alteration, game.cards):
+                nearby_deck.recipe[card] += increment
+            if not nearby_deck.isValid:
+                continue
+            if nearby_deck not in testResults:
+                testResults[nearby_deck] = np.array([])
+                newDecksMade += 1
+            if nearby_deck not in neighborhood:
+                neighborhood.append(nearby_deck)
                 
     print(f" - Created {newDecksMade} decks this round. Testing...")
     decksTested = 0
     for deck in neighborhood:
+        # Decks are tested proportionally to how much they have already been tested
         games_to_play = max(len(testResults[deck]), minNumberOfSims)
 
         if games_to_play >= maxNumberOfSims:
@@ -48,12 +71,12 @@ while stillSearching:
         if games_to_play == 0:
             continue
         if games_to_play > minNumberOfSims:
-            compareMeans = ttest_ind(testResults[deck], testResults[previousBestDeck], equal_var=False)
+            compareMeans = ttest_ind(testResults[deck], testResults[previousBestDeck], equal_var=False, alternative='less')
             if compareMeans.pvalue < alpha: 
                 continue
 
         decksTested += 1
-        testResults[deck] += game.PlayGames(deck, games_to_play)
+        testResults[deck] = np.append(testResults[deck], game.PlayGames(deck, games_to_play))
         print(f"Result: {game.ReturnScore(testResults[deck]):.4f}")
 
     bestDeckInNeighborhood = max(neighborhood, key = lambda deck: game.ReturnScore(testResults[deck]))
@@ -63,16 +86,29 @@ while stillSearching:
             bestString = ''
         print(f" - {decksTested}/{len(neighborhood)} decks tested{bestString}")
         previousBestDeck = bestDeckInNeighborhood    
-        variables = [f"{game.cards[i]}: {count}" for i, count in enumerate(previousBestDeck) if count != 0]
-        print(f" - Best arrangement: {variables}")        
-        print(f" - Score: {game.ReturnScore(testResults[previousBestDeck]):.4f}")
-        print(f" - Mean: {np.mean(testResults[previousBestDeck]):4f}")
+        print(f" - Best arrangement: {previousBestDeck}")        
+        print(f" - Score: {game.ReturnScore(testResults[previousBestDeck]):.4f}\t- Mean: {np.mean(testResults[previousBestDeck]):4f}")
 
         minNumberOfSims += simIncrement
     else:
         stillSearching = False
-        bestDeck = bestDeckInNeighborhood
     print("-----------------------------------------------")
+
+print("Double-checking all decks played... ")
+double_checking = True
+while double_checking:
+    decksTested = 0
+    for deck in testResults:
+        compareMeans = ttest_ind(testResults[deck], testResults[previousBestDeck], equal_var=False, alternative='less')
+        if compareMeans.pvalue < alpha: 
+            continue
+        output = game.PlayGames(deck, minNumberOfSims)
+        testResults[deck] = np.append(testResults[deck], output)
+        minNumberOfSims += simIncrement
+    if decksTested == 0:
+        double_checking = False
+    else:
+        previousBestDeck = max(testResults.keys(), key = lambda x: game.ReturnScore(testResults[x]))
 
 search_end = time()
 duration = (search_end - search_start)/60
@@ -82,14 +118,30 @@ second_timestamp = f"0{duration_seconds}" if duration_seconds < 10 else f"{durat
 timestamp = f"{duration_minutes}:"+second_timestamp
 print("Time to end:\t", timestamp)
 
-neighborhood.sort(key = lambda deck: game.ReturnScore(testResults[deck]), reverse=True)
-best_decks = neighborhood[:5]
-print("Top five decks: ")
-for selectedDeck in reversed(best_decks):
-    color = "\033[38;5;255m"
-    if selectedDeck == bestDeck:
-        color = "\033[38;5;220m"
-    results = testResults[selectedDeck]
-    print(f"{color}", [f"{game.cards[i]}: {count}" for i, count in enumerate(selectedDeck) if count != 0])
-    print(f"{color} - Score: {game.ReturnScore(results):.4f},\t", f"n = {len(results)}\t")
-    print(f"{color} - Mean: {np.mean(results):.4f}")
+import pandas as pd
+pd.set_option("display.precision", 4)
+
+variables = [card for card in game.cards if card.min != card.max]
+d = {card.name: [] for card in variables}
+d["Mean"] = []
+d["Std. Dev."] = []
+d["Score"] = []
+d['n'] = []
+table = pd.DataFrame(d)
+
+counter = 0
+for deck in testResults:
+    sample = testResults[deck]
+    mu = np.mean(sample)
+    sigma = np.std(sample)
+    score = game.ReturnScore(sample)
+    table.loc[counter] = [deck.recipe[var] for var in variables] + [mu, sigma, score, len(sample)]
+    counter += 1
+
+for var in variables:
+    table[var.name] = pd.to_numeric(table[var.name], downcast='integer')
+table['n'] = pd.to_numeric(table['n'], downcast='integer')
+print(f"Total number of simulations run:\t{np.sum(table['n'])}")
+print(table.sort_values('Score', ascending=False))
+
+# 10046147

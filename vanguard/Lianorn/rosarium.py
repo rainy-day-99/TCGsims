@@ -23,7 +23,7 @@ cards = [NORMAL, SINCERIETE, ROSARIUM, MOLLMOIRE, FESTA, LAGRACE, TRAUMEND, VIVA
 # Using the conditions from unisonDress.py, how many Rosarium Fairies and Mollmoires do we need?
 # Set-up to aim for exactly two: one isn't the best, and three is too many
 
-def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
+def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False) -> int:
     def DebugPrint(text: str):
         if debug:
             print(text)
@@ -180,13 +180,12 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             main_deck[draw] -= 1
             hand[draw] += 1
     
-def Threshold(data: np.array):
-    minimum = 2
-    maximum = 2
-    masked_data = np.where((data >= minimum)*(data <= maximum), 1, 0)
-    return (np.mean(masked_data))
+def Target(data: np.array):
+    target = 2
+    score = (np.mean(data) - target)/np.std(data)
+    return (score)
 
 def Mean(data: list):
     return np.mean(data)
 
-lianorn = GameEnvironment(cards, 50, RunGame, Threshold)
+lianorn = GameEnvironment(cards, 50, RunGame, Target)
