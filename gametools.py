@@ -123,7 +123,7 @@ class GameEnvironment:
                   print(f"Cache size: {len(self.cache.keys())}")
             return np.array(game_output)
       
-      def ReturnScore(self, results):
+      def Score(self, results):
             return self.interpret_results(results) 
       
 

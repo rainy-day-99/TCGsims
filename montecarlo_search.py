@@ -1,5 +1,5 @@
 from scipy.stats import ttest_ind, norm
-from vanguard.gradelock import test as game
+from vanguard.Veissrugr.lunarites import veissrugr as game
 from gametools import Decklist
 import itertools
 import numpy as np
@@ -12,14 +12,11 @@ testResults = {previousBestDeck: game.PlayGames(previousBestDeck, 2000)}
 alpha = 0.05
 minNumberOfSims = 2000
 
-if max(testResults[previousBestDeck]) == 1 and min(testResults[previousBestDeck]) == 0:
-    margin_of_error = 0.0005
-else:
-    margin_of_error = 0.0005*(10**(len(str(np.mean(testResults[previousBestDeck])).split('.')[0])))
-p = 0.5
+# For a binomial distribution, margin_of_error = 0.05%
+margin_of_error = np.amax(testResults[previousBestDeck])/2000
 z = norm.interval(1-alpha)[1]
-maxNumberOfSims = round(p*(1-p)*(z/margin_of_error)**2)
-
+maxNumberOfSims = round((z*np.std(testResults[previousBestDeck])/margin_of_error)**2)
+print(f"Testing until {maxNumberOfSims} simulations.")
 simIncrement = 1000
 
 stillSearching = True
@@ -71,23 +68,24 @@ while stillSearching:
         if games_to_play == 0:
             continue
         if games_to_play > minNumberOfSims:
-            compareMeans = ttest_ind(testResults[deck], testResults[previousBestDeck], equal_var=False, alternative='less')
+            compareMeans = ttest_ind(testResults[deck], testResults[previousBestDeck], equal_var=False)
             if compareMeans.pvalue < alpha: 
                 continue
 
         decksTested += 1
         testResults[deck] = np.append(testResults[deck], game.PlayGames(deck, games_to_play))
-        print(f"Result: {game.ReturnScore(testResults[deck]):.4f}")
+        print(f"Result: {game.Score(testResults[deck]):.4f}")
 
-    bestDeckInNeighborhood = max(neighborhood, key = lambda deck: game.ReturnScore(testResults[deck]))
+    bestDeckInNeighborhood = max(neighborhood, key = lambda deck: game.Score(testResults[deck]))
     if decksTested > 0: 
         bestString = ', best deck changed'
         if bestDeckInNeighborhood == previousBestDeck:
             bestString = ''
+        print("-----------------------------------------------")
         print(f" - {decksTested}/{len(neighborhood)} decks tested{bestString}")
         previousBestDeck = bestDeckInNeighborhood    
         print(f" - Best arrangement: {previousBestDeck}")        
-        print(f" - Score: {game.ReturnScore(testResults[previousBestDeck]):.4f}\t- Mean: {np.mean(testResults[previousBestDeck]):4f}")
+        print(f" - Score: {game.Score(testResults[previousBestDeck]):.4f}\t- Mean: {np.mean(testResults[previousBestDeck]):4f}")
 
         minNumberOfSims += simIncrement
     else:
@@ -108,7 +106,7 @@ while double_checking:
     if decksTested == 0:
         double_checking = False
     else:
-        previousBestDeck = max(testResults.keys(), key = lambda x: game.ReturnScore(testResults[x]))
+        previousBestDeck = max(testResults.keys(), key = lambda x: game.Score(testResults[x]))
 
 search_end = time()
 duration = (search_end - search_start)/60
@@ -134,14 +132,14 @@ for deck in testResults:
     sample = testResults[deck]
     mu = np.mean(sample)
     sigma = np.std(sample)
-    score = game.ReturnScore(sample)
+    score = game.Score(sample)
     table.loc[counter] = [deck.recipe[var] for var in variables] + [mu, sigma, score, len(sample)]
     counter += 1
 
-for var in variables:
+for var in variables: 
     table[var.name] = pd.to_numeric(table[var.name], downcast='integer')
 table['n'] = pd.to_numeric(table['n'], downcast='integer')
 print(f"Total number of simulations run:\t{np.sum(table['n'])}")
-print(table.sort_values('Score', ascending=False))
+print(table.sort_values('Score', ascending=False, ignore_index=True))
 
 # 10046147

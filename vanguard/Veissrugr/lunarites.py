@@ -11,11 +11,13 @@ PERSONA = VanguardCard("Persona Ride", 3, min = 3, max = 3)
 WOLF = VanguardCard("First Mythisch Roztnir", 2, min = 4, max = 4)
 SNAKE = VanguardCard("Second Mythisch Garzorms", 2,  min = 4, max = 4)
 HEL = VanguardCard("Third Mythisch Helgvarr", 1, min = 4, max = 4)
-CROW = VanguardCard("Mythisch Ravnarowg", 2, max = 16)
+
+CROW = VanguardCard("Mythisch Ravnarowg", 2, min = 5, max = 7)
+LUNARITE = VanguardCard("Lunarite", 3, unit = False, min = 4, max = 8)
 NORMAL = VanguardCard("Normal Unit", 3, unit = False)
 
 cards = [NORMAL, TRIGGER, OVER, SENTINEL, PERSONA,
-         WOLF, SNAKE, HEL, CROW]
+         WOLF, SNAKE, HEL, CROW, LUNARITE]
 
 def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     def DebugPrint(text: str):
@@ -57,7 +59,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     moon_gate = []
     bottom_deck = []
     drop = []
-    myths_called = 0
+    lunarites_played = 0
     soul = 0
     for turn in range(lastTurn):
         DebugPrint(f"---------------- Turn {turn+1} --------------------")
@@ -90,8 +92,6 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                     hand[myth] += 1
                     search_area.remove(myth)
                     main_deck[myth] -= 1
-
-                    myths_called += 1
                     break
                 for myth in [SNAKE, CROW, WOLF, HEL]:
                     if myth not in search_area:
@@ -120,7 +120,13 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         while vanguard_grade == 3 and hand[HEL] > 0:
             hand[HEL] -= 1
             search_area = random.sample(cards, counts=list(main_deck.values()), k=5)
-            if PERSONA in search_area:
+            if PERSONA in search_area and hand[PERSONA] == 0:
+                hand[PERSONA] += 1
+                main_deck[PERSONA] -= 1
+            elif LUNARITE in search_area:
+                hand[LUNARITE] += 1
+                main_deck[LUNARITE] -= 1
+            elif PERSONA in search_area:
                 hand[PERSONA] += 1
                 main_deck[PERSONA] -= 1
             soul += 1
@@ -129,14 +135,15 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
 
         for _ in range(gate_openings):
             search_area = random.sample(cards, counts=list(main_deck.values()), k=7)
+            called_helgvarr = False
             for myth in [HEL, WOLF, CROW, SNAKE]:
                 if myth not in search_area:
                     continue
                 hand[myth] += 1
                 search_area.remove(myth)
                 main_deck[myth] -= 1
-
-                myths_called += 1
+                if myth == HEL:
+                    called_helgvarr = True
                 break
             for _ in range(2):
                 if vanguard_grade < 3:
@@ -150,11 +157,23 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                     break
             while bottom_deck:
                 main_deck[bottom_deck.pop()] += 1
+            if called_helgvarr:
+                hand[HEL] -= 1
+                search_area = random.sample(cards, counts=list(main_deck.values()), k=5)
+                if PERSONA in search_area and hand[PERSONA] == 0:
+                    hand[PERSONA] += 1
+                    main_deck[PERSONA] -= 1
+                elif LUNARITE in search_area:
+                    hand[LUNARITE] += 1
+                    main_deck[LUNARITE] -= 1
+                elif PERSONA in search_area:
+                    hand[PERSONA] += 1
+                    main_deck[PERSONA] -= 1
+                soul += 1
+        if vanguard_grade == 3 and hand[LUNARITE] > 0:
+            hand[LUNARITE] -= 1
+            lunarites_played += 1
         # Battle phase
-        for _ in range(2):
-            if moon_gate:
-                moon_gate.pop()
-                myths_called += 1
         drives = 1 if vanguard_grade < 3 else 2
         if opponents_grade == 0:
             drives = 0
@@ -186,19 +205,10 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         main_deck[damage] -= 1
         DebugPrint(f"Damage checked {damage}")
 
-    return myths_called
+    return lunarites_played
 
-def Success(data: np.array):
-    # 1 Myth to hand from riding G2
-    # 1 Myth called through Moon Gate on G2
-    # 2 Myth called through Moon Gate on T3
-    # 2 Myth called through Veissrugr on T3
-    # 2 Myth called through Moon Gate on T4
-    # 2 Myth called through Veissrugr on T4
+def Threshold(data: np.array):
+    mu = np.mean(data)
+    return mu - 2
 
-    # 10 potential calls from the Gate, so we're okay whiffing once
-    masked_data = np.where(data == 9, 1, 0)
-    mu = np.mean(masked_data)
-    return mu
-
-veissrugr = GameEnvironment(cards, 50, RunGame, Success)
+veissrugr = GameEnvironment(cards, 50, RunGame, Threshold)

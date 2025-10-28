@@ -92,7 +92,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
 
     return 1
 
-def Mean(data: list):
+def Mean(data: np.array):
     mu = np.mean(data)
     return mu
 

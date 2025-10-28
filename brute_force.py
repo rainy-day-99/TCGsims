@@ -1,4 +1,4 @@
-from vanguard.Lianorn.rosarium import lianorn as game
+from vanguard.Veissrugr.lunarites import veissrugr as game
 from gametools import Decklist
 from itertools import product
 
@@ -33,7 +33,8 @@ while True:
 variables = [card for card in game.cards if card.min != card.max]
 print("Variables considered: ", variables)
 print(f"Testing {len(valid_decks)} decks total")
-n = 500000
+n = 164041
+
 print(f"Running n = {n} simulations per deck...\n")
 
 d = {card.name: [] for card in variables}
@@ -46,7 +47,7 @@ for i, deck in enumerate(valid_decks):
     results = game.PlayGames(deck, n)
     mu = np.mean(results)
     sigma = np.std(results)
-    score = game.ReturnScore(results)
+    score = game.Score(results)
     table.loc[i] = [int(deck.recipe[var]) for var in variables] + [mu, sigma, score]
 
 pd.set_option("display.precision", 4)
