@@ -198,8 +198,8 @@ def _helgvarr_search(hand: dict, deck: dict):
 
 def value(data: np.array):
     attacks_made = data[:, 1]
-    extra_in_gate = data[:, 2]
-    return (attacks_made - extra_in_gate)
+    # extra_in_gate = data[:, 2]
+    return (attacks_made)
 
 """
     Always ensure that the game environment variable 
