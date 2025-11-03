@@ -64,14 +64,14 @@ def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
     test_count = 0
     for key in keys:
         deck: Decklist = decks[key]
-        games_to_play = max(deck.games_played, minimum)
+        games_to_play = minimum
         if (games_to_play + deck.games_played) >= maximum:
-            games_to_play = max(maximum - games_to_play, 0)
+            games_to_play = max(maximum - deck.games_played, 0)
         if games_to_play == 0:
             msg = emoji.emojize(f":stop_sign: {deck} has reached simulation limit")
             print(msg)
             continue
-        if games_to_play > minimum:
+        if deck.games_played > 0:
             compareMeans = ttest_ind(env.Score(deck), 
                                      env.Score(decks[bestDeck.key]), 
                                      equal_var=False)
