@@ -1,13 +1,14 @@
 from gametools import Decklist, GameEnvironment
-
+from scipy.stats import ttest_ind
 import itertools
 
 
-def broad_search(env: GameEnvironment, num_sims: int = 500000):
+def broad_search(env: GameEnvironment, max_sims: int = 500000):
     priorBestDeck = env.CreateInitialDeck()
     neighborhood = _expand(priorBestDeck, env)
-    for deck in neighborhood:
-        env.RunGames(deck, num_sims)
+    searching = True
+    while searching:
+        neighborhood, searching = _iterate_through_neighborhood(neighborhood, env, max_sims)
     all_decks = dict()
     for deck in neighborhood:
         all_decks[deck.key] = deck
@@ -35,4 +36,27 @@ def _expand(center: Decklist, env: GameEnvironment):
         decks += new_decks
     return(decks)
 
+def _iterate_through_neighborhood(decks: dict, env: GameEnvironment, maximum: int):
+    try:
+        decks.sort(key = lambda deck: env.Score(deck, statistic="mean"), reverse = True)
+    except:
+        pass
+    best_deck = decks[0]
+    minimum = 5000
+    alpha = 0.01
+    deck: Decklist
+    decks_tested = 0
+    for deck in decks:
+        num_sims = max(minimum, deck.games_played)
+        if deck.games_played + num_sims > maximum:
+            num_sims = maximum - deck.games_played
+        if deck.games_played > 0:
+            compare_scores = ttest_ind(env.Score(deck), env.Score(best_deck))
+            if compare_scores.pvalue < alpha:
+                continue
+        env.RunGames(deck, num_sims)
+        decks_tested += 1
+    if decks_tested > 2:
+        return decks, True
+    return decks, False
 

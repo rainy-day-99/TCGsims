@@ -1,4 +1,4 @@
-from Veissrugr.mythisch import game
+from Premium.gradelock import game
 import numpy as np
 import pandas as pd
 from time import time
