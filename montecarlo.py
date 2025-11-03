@@ -25,14 +25,16 @@ def local_search(env: GameEnvironment, max_sims: int = 500000):
         print(f"Added {new_decks} new decks to the pool. Testing...\n")
         bestDeck, all_decks, decks_tested = _test_pool(
             neighborhood, all_decks, priorBestDeck, env, min_sims, max_sims)
-        
-        score = np.around(env.Score(bestDeck, statistic='mean'), 4)
-        mu = np.around(np.mean(bestDeck.results, axis = 0), 4)
-        print(f"\n - Best arrangement: {bestDeck}")
+        if bestDeck == priorBestDeck and decks_tested == 1:
+            decks_tested = 0
+        if env.Score(bestDeck, statistic='mean') > env.Score(priorBestDeck, statistic='mean'):
+            priorBestDeck = bestDeck
+        score = np.around(env.Score(priorBestDeck, statistic='mean'), 4)
+        mu = np.around(np.mean(priorBestDeck.results, axis = 0), 4)
+        print(f"\n - Best arrangement: {priorBestDeck}")
         print(f" - Score: {score:.4f}\t- Mean: {mu}")
 
         min_sims += sim_increment
-        priorBestDeck = bestDeck
     return all_decks
 
 
@@ -56,7 +58,7 @@ def _create_neighborhood(decks: dict, center: Decklist, env: GameEnvironment):
 def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
                 env: GameEnvironment,
                 minimum: int, maximum: int):
-    alpha = 0.005
+    alpha = 0.01
     localBestScore = 0
     localBestDeck = bestDeck
     test_count = 0
