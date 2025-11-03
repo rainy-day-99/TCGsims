@@ -7,14 +7,15 @@ OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
 SENTINEL = VanguardCard("Perfect Guard", 1, min = 4, max = 4)
 PERSONA = VanguardCard("Persona Ride", 3, min = 3, max = 3)
 
+# Veissrugr specific cards
 WOLF = VanguardCard("1st Mythisch Roztnir", 2, min = 4, max = 4)
 SNAKE = VanguardCard("2nd Mythisch Garzorms", 2, min = 4, max = 4)
 HEL = VanguardCard("3rd Mythisch Helgvarr", 1, min = 4, max = 4)
 GATE = VanguardCard("Moon Gate", 1, min = 1, max = 1)
+LUNARITE = VanguardCard("Lunarite Order", 3, unit=False, min = 5, max = 5)
 
 # Variables
 BIRD = VanguardCard("Mythisch Ravnarowg", 2, min = 5, max = 10)
-LUNARITE = VanguardCard("Lunarite Order", 3, unit=False, min = 5, max = 5)
 NORMAL = VanguardCard("Normal Unit", 2)
 
 card_types = [NORMAL, TRIGGER, OVER, SENTINEL, PERSONA,
@@ -31,10 +32,10 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     last_turn = 5
     opponents_grade = 1 if goingSecond else 0
     moon_gate = []
-    advantage = 0
     field = []
-    bottom = []
+    bottom_deck = []
     soul = 0
+    attacks_made = 0
     energy = 0
     for turn in range(1, last_turn + 1):        
         # Start of turn
@@ -78,8 +79,9 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             field.append(HEL)
             hand[HEL] -= 1
             hand, main_deck = _helgvarr_search(hand, main_deck)
-            while bottom:
-                main_deck[bottom.pop()] += 1
+            while bottom_deck:
+                main_deck[bottom_deck.pop()] += 1
+
         for _ in range(gate_openings):
             cards_to_gate = 2 if vanguard_grade >= 3 else 1
             moon_gate, main_deck, call = _open_gate(moon_gate, main_deck, cards_to_gate)
@@ -87,8 +89,8 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                 field.append(call)
                 if call == HEL:
                     hand, main_deck = _helgvarr_search(hand, main_deck)
-            while bottom:
-                main_deck[bottom.pop()] += 1
+            while bottom_deck:
+                main_deck[bottom_deck.pop()] += 1
 
         # Battle phase                
         for card in field:
@@ -109,15 +111,17 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             if not moon_gate:
                 break
             call = moon_gate.pop()
-            advantage += 1
+            attacks_made += 1
             if call == HEL:
                 soul += 1
+
         # Opponent's turn
         opponents_grade += 1
         hand, main_deck = _draw(hand, main_deck, False)
         if vanguard_grade >= 3:
-            bottom += [BIRD, BIRD]
-    return (goingSecond, advantage, len(moon_gate))
+            bottom_deck += [BIRD, BIRD]
+
+    return (goingSecond, attacks_made, len(moon_gate))
 
 def _draw(hand: dict, deck: dict, add: bool = True):
     try:
@@ -139,7 +143,7 @@ def _mulligan(hand: dict, deck: dict):
                                     k = _handsize*2)
     premulligan = mulligan_range[:5]
     postmulligan = mulligan_range[5:]
-    for card in [SENTINEL, PERSONA, LUNARITE, WOLF, HEL]:
+    for card in [SENTINEL, PERSONA, NORMAL, LUNARITE]:
         if card in premulligan:
             premulligan.remove(card)
             hand[card] += 1
@@ -196,13 +200,40 @@ def _helgvarr_search(hand: dict, deck: dict):
         deck[PERSONA] -= 1
     return(hand, deck)
 
-def value(data: np.array):
+def TotalAttackValue(data: np.array):
     attacks_made = data[:, 1]
-    # extra_in_gate = data[:, 2]
     return (attacks_made)
 
 """
     Always ensure that the game environment variable 
     is called 'game' so main.py can see it
 """
-game = GameEnvironment(card_types, 50, run_game, value)
+game = GameEnvironment(card_types, 50, run_game, TotalAttackValue)
+
+
+""" Keeping one Roztnir and Helgvarr
+   Normal Unit  Mythisch Ravnarowg                   Mean   Score      n
+0            0                   9  [0.5, 5.5908, 1.3318]  5.5908  10000
+1            1                   8  [0.5, 5.4278, 0.9968]  5.4278   5000
+2            2                   7   [0.5, 5.2536, 0.768]  5.2536   5000
+3            3                   6   [0.5, 4.995, 0.5482]  4.9950   5000
+4            4                   5  [0.5, 4.7172, 0.3534]  4.7172   5000
+"""
+
+""" Keeping one Helgvarr
+   Normal Unit  Mythisch Ravnarowg                   Mean   Score      n
+0            0                   9  [0.5, 5.6577, 1.5104]  5.6577  10000
+1            1                   8   [0.5, 5.5288, 1.218]  5.5288   5000
+2            2                   7  [0.5, 5.3704, 0.9238]  5.3704   5000
+3            3                   6  [0.5, 5.1204, 0.6608]  5.1204   5000
+4            4                   5   [0.5, 4.885, 0.4524]  4.8850   5000
+"""
+
+""" Putting all Mythisch back
+   Normal Unit  Mythisch Ravnarowg                   Mean   Score      n
+0            0                   9  [0.5, 5.7259, 1.6891]  5.7259  10000
+1            1                   8   [0.5, 5.593, 1.3622]  5.5930   5000
+2            2                   7  [0.5, 5.4844, 1.0906]  5.4844   5000
+3            3                   6  [0.5, 5.2978, 0.7902]  5.2978   5000
+4            4                   5   [0.5, 5.063, 0.5466]  5.0630   5000
+"""

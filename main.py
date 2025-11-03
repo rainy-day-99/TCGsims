@@ -1,10 +1,10 @@
-from Premium.gradelock import game
+from Veissrugr.mythisch import game
 import numpy as np
 import pandas as pd
 from time import time
 from datetime import timedelta
-from montecarlo import local_search
-from bruteforce import broad_search
+from Algorithms.montecarlo import local_search
+from Algorithms.bruteforce import broad_search
 from os import get_terminal_size
 
 def single_test(game = game, num_sims = 100000):
@@ -19,7 +19,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['monte-carlo'](game)
+decks = search_choice['brute-force'](game)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Mean', 'Score', 'n']
