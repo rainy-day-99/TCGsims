@@ -1,12 +1,12 @@
 import random as random
 import numpy as np
-from gametools import GameEnvironment, VanguardCard
+from gametools import VanguardCard, GameEnvironment
 
 STARTER = VanguardCard("V Starter", 0, max = 0)
-GRADE_1 = VanguardCard("Grade 1", 1)
+GRADE_1 = VanguardCard("Grade 1", 1, min = 4, max = 16)
 BRANWEN = VanguardCard("Branwen", 1, min = 0, max = 0)
-GRADE_2 = VanguardCard("Grade 2", 2)
-GRADE_3 = VanguardCard("Grade 3", 3)
+GRADE_2 = VanguardCard("Grade 2", 2, min = 4, max = 16)
+GRADE_3 = VanguardCard("Grade 3", 3, min = 4, max = 16)
 
 TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
 OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
@@ -43,7 +43,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     for i, _ in enumerate(premulligan):
         hand[postmulligan[i]] += 1
     if (hand[GRADE_1] + hand[BRANWEN] > 0) and (hand[GRADE_2] > 0) and (hand[GRADE_3] > 0):
-        return 1
+        return((goingSecond, 3))
     for card in hand:
         main_deck[card] -= hand[card]
     DebugPrint("Post mulligan: " + str({card: hand[card] for card in hand if hand[card] > 0}))
@@ -80,7 +80,7 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
                     main_deck[GRADE_3] -= 1
                     DebugPrint(f"Added grade 3 from Branwen clone")
         if vanguard.grade == 3:
-            return 1
+            return((goingSecond, 3))
         DebugPrint("Hand: " + str({card: hand[card] for card in hand if hand[card] > 0}))
 
         # Main phase
@@ -118,10 +118,18 @@ def RunGame(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
             main_deck[draw] -= 1
             hand[draw] += 1
 
-    return 0
+    return((goingSecond, vanguard.grade))
 
-def Mean(data: np.array):
-    mu = np.mean(data)
-    return mu
+def ReachedGradeThree(data: np.array):
+    grades = data[:, 1]
+    filtered = np.where(grades == 3, 1, 0)
+    return filtered
 
-test = GameEnvironment(cards, 49, RunGame, Mean)
+"""
+    Always ensure that the game environment variable 
+    is called 'game' so main.py can see it
+"""
+game = GameEnvironment(cards, 49, RunGame, ReachedGradeThree)
+
+if __name__ == '__main__':
+    pass
