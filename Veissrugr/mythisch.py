@@ -25,8 +25,6 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
     # Mulligan step
     hand = {card: 0 for card in main_deck}
     hand, main_deck = _mulligan(hand, main_deck)
-    for card in hand:
-        main_deck[card] -= hand[card]
     
     vanguard_grade = 0
     last_turn = 5
@@ -143,7 +141,7 @@ def _mulligan(hand: dict, deck: dict):
                                     k = _handsize*2)
     premulligan = mulligan_range[:5]
     postmulligan = mulligan_range[5:]
-    for card in [SENTINEL, PERSONA, NORMAL, LUNARITE]:
+    for card in [SENTINEL, PERSONA, NORMAL, HEL, WOLF, LUNARITE]:
         if card in premulligan:
             premulligan.remove(card)
             hand[card] += 1

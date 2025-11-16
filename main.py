@@ -1,4 +1,4 @@
-from Veissrugr.mythisch import game
+from Arkhite.research import game
 import numpy as np
 import pandas as pd
 from time import time
@@ -13,13 +13,13 @@ def single_test(game = game, num_sims = 100000):
       return {initial_deck.key: initial_deck}
 
 search_choice = {
-      'monte-carlo': local_search,
+      'local-search': local_search,
       'brute-force': broad_search,
       'single-test': single_test
 }
 
 start = time()
-decks = search_choice['brute-force'](game)
+decks = search_choice['local-search'](game)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Mean', 'Score', 'n']

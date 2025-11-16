@@ -42,7 +42,7 @@ def _iterate_through_neighborhood(decks: dict, env: GameEnvironment, maximum: in
     except:
         pass
     best_deck = decks[0]
-    minimum = 5000
+    minimum = 10000
     alpha = 0.01
     deck: Decklist
     decks_tested = 0
