@@ -22,4 +22,4 @@ The second is a *brute-force* search of every possible deck. This iteratively ru
 The brute-force search is best used when you're interested in the scores and means of every deck and they can all be tested in a reasonable amount of time. The local search is best when this is not feasible.
 
 ## How are these used?
-The results of the searches are meant to help guide deckbuilding decisions, but should not be taken as gospel. Several assumptions are made in the creation of individual sims, and I cannot claim that any results are "optimal" as a result. However, it is helpful to have some numbers to refer to in conversations surrounding deckbuilding, and these simulations should help provide that.
+The results of the searches are meant to help guide deck-building decisions, but should not be taken as gospel. Several assumptions are made in the creation of individual sims, and I cannot claim that any results are optimal as a result. However, having some idea of what the numbers are can help guide deck-building conversations. Even if the results are not "optimal", they can still be a solid starting point for discussion.
