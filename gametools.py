@@ -8,7 +8,6 @@ import emoji
       - GameEnvironment: manager for running simulations. 
 """
 
-@total_ordering
 class Card:
     cards_created = 0
     def __init__(self, name: str, min = 0, max = 99, *flag: str):
@@ -26,8 +25,6 @@ class Card:
         return self.priority
     def __eq__(self, other):
           return self.priority == other.priority
-    def __lt__(self, other):
-          return (self.priority < other.priority)
     
 class VanguardCard(Card):
       def __init__(self, name, grade: int, unit = True, trigger = False, min=0, max=99, *flag: str):
@@ -129,12 +126,12 @@ class Decklist:
 class GameEnvironment:
       def __init__(self, 
                    cards: list, deck_size: int, 
-                   run_game, interpret_results):
+                   sim_function, interpret_results):
             
             self.cards = cards
             self.deck_size = deck_size
 
-            self.run_game = run_game
+            self.run_game = sim_function
             self.interpret_results = interpret_results
                  
             self.variables = [card for card in cards if card.min != card.max]
@@ -144,12 +141,16 @@ class GameEnvironment:
 
       # Generic methods, since they will differ depending on deck played
       def RunGames(self, deck: Decklist, number_of_games: int, debug = False):
-            game_output = []
             done = emoji.emojize(":green_circle:")
             playing = emoji.emojize(":hollow_red_circle:")
+            stopped = emoji.emojize(":stop_sign:")
+            if number_of_games == 0:
+                  print(f"{stopped} Played no games with {deck}")
+                  return
+            game_output = []
 
             for g in range(number_of_games):
-                  print(f"\r{playing} Played {g}/{number_of_games} games with {deck}", end = "", flush=True)
+                  print(f"{playing} Played {g}/{number_of_games} games with {deck}", end = "\r", flush=True)
                   result = self.run_game(deck.recipe.copy(), g%2, self.cache, debug)
                   game_output.append(result)
             if self.cache:
