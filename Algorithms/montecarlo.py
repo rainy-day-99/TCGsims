@@ -6,7 +6,7 @@ import itertools
 import numpy as np
 import emoji
 
-def local_search(env: GameEnvironment, max_sims: int = 500000):
+def local_search(env: GameEnvironment, max_sims: int = 200000):
     priorBestDeck = env.CreateInitialDeck()
     all_decks = {priorBestDeck.key: priorBestDeck}
 
@@ -25,8 +25,13 @@ def local_search(env: GameEnvironment, max_sims: int = 500000):
         print(f"Added {new_decks} new decks to the pool. Testing...\n")
         bestDeck, all_decks, decks_tested = _test_pool(
             neighborhood, all_decks, priorBestDeck, env, min_sims, max_sims)
-        if bestDeck == priorBestDeck and decks_tested == 1:
-            decks_tested = 0
+        
+        if bestDeck == priorBestDeck:
+            min_sims = int(min_sims*1.5)
+            if decks_tested == 1:
+                decks_tested = 0
+        else:
+            min_sims += sim_increment
         if env.Score(bestDeck, statistic='mean') > env.Score(priorBestDeck, statistic='mean'):
             priorBestDeck = bestDeck
         score = np.around(env.Score(priorBestDeck, statistic='mean'), 4)
@@ -34,7 +39,6 @@ def local_search(env: GameEnvironment, max_sims: int = 500000):
         print(f"\n - Best arrangement: {priorBestDeck}")
         print(f" - Score: {score:.4f}\t- Mean: {mu}")
 
-        min_sims += sim_increment
     return all_decks
 
 
