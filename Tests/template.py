@@ -12,9 +12,9 @@ NORMAL = VanguardCard("Normal Unit", 2)
 
 card_types = [NORMAL, TRIGGER, OVER, SENTINEL, PERSONA]
 
-def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
+def run_game(main_deck: dict[VanguardCard, int], goingSecond: bool, cache = {}, debug = False):
     # Mulligan step
-    hand = {card: 0 for card in main_deck}
+    hand: dict[VanguardCard, int] = {card: 0 for card in main_deck}
     hand, main_deck = _mulligan(hand, main_deck)
     
     vanguard_grade = 0
@@ -40,15 +40,18 @@ def run_game(main_deck: dict, goingSecond: bool, cache = {}, debug = False):
         if opponents_grade == 0:
             drives = 0
         for _ in range(drives):
-            hand, main_deck = _draw(hand, main_deck)
+            hand, main_deck, _ = _triggercheck(hand, main_deck, drive=True)
 
         # Opponent's turn
         opponents_grade += 1
-        hand, main_deck = _draw(hand, main_deck, False)
+        for _ in range(random.choice([1, 2])):
+            hand, main_deck, damage = _triggercheck(hand, main_deck, drive=False)
+            if damage == OVER:
+                break
 
     return (goingSecond, vanguard_grade)
 
-def _draw(hand: dict, deck: dict, add: bool = True):
+def _draw(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int], add: bool = True):
     top_of_deck = random.choices(
         list(deck.keys()),   
         weights=list(deck.values()), k=1)
@@ -58,7 +61,7 @@ def _draw(hand: dict, deck: dict, add: bool = True):
         hand[draw] += 1
     return hand, deck
 
-def _mulligan(hand: dict, deck: dict):
+def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
     _handsize = 5
     mulligan_range = random.sample(
         list(deck.keys()), 
@@ -81,6 +84,17 @@ def _mulligan(hand: dict, deck: dict):
     for card in hand:
         deck[card] -= hand[card]
     return hand, deck
+
+def _triggercheck(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int], drive: bool):
+    check = random.choices(
+        list(deck.keys()),   
+        weights=list(deck.values()), k=1)
+    deck[check] -= 1
+    if check == OVER:
+        hand, deck = _draw(hand, deck, add=True)
+    elif drive:
+        hand[check] += 1
+    return hand, deck, check
 
 def value(data: np.array):
     grades = data[:, 1]
