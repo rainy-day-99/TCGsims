@@ -1,4 +1,4 @@
-from Tests.opening_hand import game
+from Tests.template import game
 import numpy as np
 import pandas as pd
 from time import time
@@ -20,7 +20,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['single-test'](game, 200000)
+decks = search_choice['broad-search'](game, 400000)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean']
@@ -46,7 +46,7 @@ mean_as_list = pd.DataFrame(table["Mean"].to_list())
 table.drop("Mean", axis=1, inplace=True)
 output = table.join(mean_as_list)
 
-with pd.ExcelWriter("ExcelOutputs/frequency.xlsx", engine="openpyxl", 
-                    mode="a", if_sheet_exists="replace"
-                    ) as w:
-      output.to_excel(w, sheet_name="no turns")
+# with pd.ExcelWriter("ExcelOutputs/frequency.xlsx", engine="openpyxl", 
+#                     mode="a", if_sheet_exists="replace"
+#                     ) as w:
+#       output.to_excel(w, sheet_name="3 turns")
