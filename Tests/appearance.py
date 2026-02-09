@@ -3,28 +3,27 @@ import numpy as np
 from gametools import GameEnvironment, VanguardCard
 from helper import draw
 
-SENTINEL = VanguardCard("Perfect Guard", 1, min = 4, max = 4)
-PERSONA = VanguardCard("Persona Ride", 3, min = 3, max = 3)
-NORMAL = VanguardCard("Normal Unit", 2, min = 27, max = 27)
+TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
+OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
+SENTINEL = VanguardCard("Perfect Guard", 1, min = 0, max = 0)
+PERSONA = VanguardCard("Persona Ride", 3, min = 0, max = 0)
 
 # Default variable
-CRITICAL = VanguardCard("Critical", 0, trigger = True, min = 0, max = 8)
-TRIGGER = VanguardCard("Others", 0, trigger = True, min = 8, max = 16)
+SPECIAL = VanguardCard("Special", 2, max = 8)
+NORMAL = VanguardCard("Normal", 1)
 
-card_types = [NORMAL, CRITICAL, TRIGGER, SENTINEL, PERSONA]
+card_types = [NORMAL, SPECIAL, TRIGGER, OVER, SENTINEL, PERSONA]
 
 def run_game(main_deck: dict[VanguardCard, int], goingSecond: bool, cache = {}, debug = False):
+    goingSecond = False
     # Mulligan step
     hand: dict[VanguardCard, int] = {card: 0 for card in main_deck}
     hand, main_deck = _mulligan(hand, main_deck)
     
     vanguard_grade = 0
-    last_turn = 5
+    last_turn = 3
     opponents_grade = 1 if goingSecond else 0
     damage_taken = 0
-
-    drive_triggers = 0
-    damage_triggers = 0
     for turn in range(1, last_turn + 1):        
         # Start of turn
         hand, main_deck, _ = draw(hand, main_deck)
@@ -44,25 +43,23 @@ def run_game(main_deck: dict[VanguardCard, int], goingSecond: bool, cache = {}, 
         drives = 1 if vanguard_grade < 3 else 2
         if opponents_grade == 0:
             drives = 0
-        elif opponents_grade >= 3:
-            drives += 1
         for _ in range(drives):
-            hand, main_deck, drive_check = draw(hand, main_deck, add=True)
-            if drive_check == CRITICAL:
-                drive_triggers += 1
+            hand, main_deck, _ = draw(hand, main_deck, add=True)
 
         # Opponent's turn
         opponents_grade += 1
         for _ in range(random.choice([1, 2])):
             if damage_taken == 5:
                 break
-            hand, main_deck, damage_check = draw(hand, main_deck, add=False)
-            if damage_check == CRITICAL:
-                damage_triggers += 1
+            hand, main_deck, damage = draw(hand, main_deck, add=False)
+            if damage == OVER:
+                hand, main_deck, _ = draw(hand, main_deck)
+                break
             damage_taken += 1
 
-    triggers_drawn = hand[CRITICAL] - drive_triggers
-    return(drive_triggers, damage_triggers, triggers_drawn)
+    frequency = [0 for _ in range(8+1)]
+    frequency[hand[SPECIAL]] = 1
+    return frequency
 
 def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
     _handsize = 5
@@ -72,8 +69,7 @@ def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
         k = _handsize*2)
     premulligan = mulligan_range[:5]
     postmulligan = mulligan_range[5:]
-
-    _keep_one = [SENTINEL, PERSONA, CRITICAL]
+    _keep_one = [SENTINEL, PERSONA]
     card: VanguardCard
     for card in premulligan:
         if card.isTrigger:
@@ -89,14 +85,9 @@ def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
         deck[card] -= hand[card]
     return hand, deck
 
-def total(data: np.array):
-    drives = data[:, 0]
-    damages = data[:, 1]
-    return drives + damages
-
 def none(data: np.array):
-    triggers_checked = data[:, 0] + data[:, 1]
-    return np.where(triggers_checked > 0, 1, 0)
+    zero = data[:, 0]
+    return 1-zero
 
 """
     Always ensure that the game environment variable 

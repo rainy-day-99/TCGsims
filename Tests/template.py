@@ -1,6 +1,7 @@
 import random as random
 import numpy as np
 from gametools import GameEnvironment, VanguardCard
+from helper import draw
 
 TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
 OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
@@ -20,18 +21,19 @@ def run_game(main_deck: dict[VanguardCard, int], goingSecond: bool, cache = {}, 
     vanguard_grade = 0
     last_turn = 3
     opponents_grade = 1 if goingSecond else 0
+    damage_taken = 0
     for turn in range(1, last_turn + 1):        
         # Start of turn
-        hand, main_deck = _draw(hand, main_deck)
+        hand, main_deck = draw(hand, main_deck)
 
         # Ride step
         if vanguard_grade < 3:
             vanguard_grade += 1
             if vanguard_grade == 1 and goingSecond:
-                hand, main_deck = _draw(hand, main_deck)
+                hand, main_deck = draw(hand, main_deck)
         elif hand[PERSONA] > 0:
             hand[PERSONA] -= 1
-            hand, main_deck = _draw(hand, main_deck)
+            hand, main_deck = draw(hand, main_deck)
 
         # Main phase
 
@@ -40,26 +42,19 @@ def run_game(main_deck: dict[VanguardCard, int], goingSecond: bool, cache = {}, 
         if opponents_grade == 0:
             drives = 0
         for _ in range(drives):
-            hand, main_deck, _ = _triggercheck(hand, main_deck, drive=True)
+            hand, main_deck, _ = draw(hand, main_deck, add=True)
 
         # Opponent's turn
         opponents_grade += 1
         for _ in range(random.choice([1, 2])):
-            hand, main_deck, damage = _triggercheck(hand, main_deck, drive=False)
+            if damage_taken == 5:
+                break
+            hand, main_deck, damage = draw(hand, main_deck, add=False)
             if damage == OVER:
                 break
+            damage_taken += 1
 
     return (goingSecond, vanguard_grade)
-
-def _draw(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int], add: bool = True):
-    top_of_deck = random.choices(
-        list(deck.keys()),   
-        weights=list(deck.values()), k=1)
-    draw = top_of_deck[0]
-    deck[draw] -= 1
-    if add:
-        hand[draw] += 1
-    return hand, deck
 
 def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
     _handsize = 5
@@ -84,17 +79,6 @@ def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
     for card in hand:
         deck[card] -= hand[card]
     return hand, deck
-
-def _triggercheck(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int], drive: bool):
-    check = random.choices(
-        list(deck.keys()),   
-        weights=list(deck.values()), k=1)
-    deck[check] -= 1
-    if check == OVER:
-        hand, deck = _draw(hand, deck, add=True)
-    elif drive:
-        hand[check] += 1
-    return hand, deck, check
 
 def value(data: np.array):
     grades = data[:, 1]

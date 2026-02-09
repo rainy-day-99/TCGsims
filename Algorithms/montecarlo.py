@@ -83,6 +83,8 @@ def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
                 msg = emoji.emojize(f":fast-forward_button: {deck} skipped for time")
                 print(msg)
                 continue
+        else: 
+            games_to_play = 10000
         
         test_count += 1
         env.RunGames(deck, games_to_play)
