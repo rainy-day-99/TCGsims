@@ -20,7 +20,7 @@ def run_game(main_deck: dict[VanguardCard, int], going_second: bool, cache = {},
     hand, main_deck = _mulligan(hand, main_deck)
     
     vanguard_grade = 0
-    last_turn = 0
+    last_turn = 4
     opponents_grade = 1 if going_second else 0
     damage_taken = 0
     for _ in range(last_turn):        

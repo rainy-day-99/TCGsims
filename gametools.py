@@ -1,5 +1,6 @@
 from functools import total_ordering
 import numpy as np
+from scipy.stats import mode
 import emoji
 """
       Contains three classes:
@@ -175,6 +176,8 @@ class GameEnvironment:
                   return np.mean(scored_results)
             if statistic == 'std':
                   return np.mean(scored_results)
+            if staticmethod == 'mode':
+                  return mode(scored_results)
             return scored_results
       
       def CreateInitialDeck(self):

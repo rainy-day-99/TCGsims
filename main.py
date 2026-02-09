@@ -1,10 +1,12 @@
-from Tests.template import game
-import numpy as np
-import pandas as pd
-from time import time
-from datetime import timedelta
+from Arkhite.control import game
 from Algorithms.montecarlo import local_search
 from Algorithms.bruteforce import broad_search
+
+import numpy as np
+import pandas as pd
+
+from time import time
+from datetime import timedelta
 from os import get_terminal_size
 
 
@@ -20,17 +22,18 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['broad-search'](game, 400000)
+decks = search_choice['single-test'](game, 50000)
 duration = str(timedelta(seconds = round(time() - start)))
 
-column_names = game.variables + ['Score', 'n', 'Mean']
+column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
 table = pd.DataFrame(columns=column_names)
 total_games_played = 0
 for i, deck in enumerate(decks.values()):
       mu = np.around(np.mean(deck.results, axis=0), 4)
       score = np.around(game.Score(deck, statistic='mean'), 4)
       n = deck.games_played
-      table.loc[i] = [deck.recipe[card] for card in game.variables] + [score, n, mu]
+      freq = game.Score(deck, statistic='mode')
+      table.loc[i] = [deck.recipe[card] for card in game.variables] + [score, n, mu, freq]
       total_games_played += deck.games_played
 
 table.sort_values("Score", ascending=False, inplace=True, ignore_index=True)
