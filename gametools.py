@@ -176,8 +176,8 @@ class GameEnvironment:
                   return np.mean(scored_results)
             if statistic == 'std':
                   return np.mean(scored_results)
-            if staticmethod == 'mode':
-                  return mode(scored_results)
+            if statistic == 'mode':
+                  return mode(scored_results, axis=None)[0]
             return scored_results
       
       def CreateInitialDeck(self):

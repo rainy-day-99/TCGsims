@@ -10,7 +10,7 @@ PERSONA = VanguardCard("Persona Ride", 3, min = 0, max = 0)
 
 # Default variable
 NORMAL = VanguardCard("Normal Unit", 1)
-TARGET = VanguardCard("Target", 2, min = 1, max = 5)
+TARGET = VanguardCard("Target", 2, min = 4, max = 4)
 
 card_types = [NORMAL, TARGET, TRIGGER, OVER, SENTINEL, PERSONA]
 
@@ -77,7 +77,7 @@ def _mulligan(hand: dict[VanguardCard, int], deck: dict[VanguardCard, int]):
     for _ in range(len(_returned)):
         hand[_mulligan_range.pop()] += 1
     for card in hand:
-        deck[card] -= 1
+        deck[card] -= hand[card]
     return hand, deck
 
 def value(data: np.array):

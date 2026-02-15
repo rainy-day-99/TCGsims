@@ -1,4 +1,4 @@
-from Arkhite.control import game
+from Arkhite.basic import game
 from Algorithms.montecarlo import local_search
 from Algorithms.bruteforce import broad_search
 
@@ -9,8 +9,7 @@ from time import time
 from datetime import timedelta
 from os import get_terminal_size
 
-
-def single_test(game = game, num_sims = 200000):
+def single_test(game = game, num_sims = 300000):
       initial_deck = game.CreateInitialDeck()
       game.RunGames(initial_deck, num_sims)
       return {initial_deck.key: initial_deck}
@@ -22,7 +21,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['single-test'](game, 50000)
+decks = search_choice['broad-search'](game, 300000)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
@@ -49,7 +48,7 @@ mean_as_list = pd.DataFrame(table["Mean"].to_list())
 table.drop("Mean", axis=1, inplace=True)
 output = table.join(mean_as_list)
 
-# with pd.ExcelWriter("ExcelOutputs/frequency.xlsx", engine="openpyxl", 
-#                     mode="a", if_sheet_exists="replace"
-#                     ) as w:
-#       output.to_excel(w, sheet_name="3 turns")
+with pd.ExcelWriter("ExcelOutputs/arkhite.xlsx", engine="openpyxl", 
+                    mode="a", if_sheet_exists="replace"
+                    ) as w:
+      output.to_excel(w, sheet_name="Valtrossa and Pantera")

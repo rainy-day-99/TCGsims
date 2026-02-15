@@ -40,3 +40,8 @@ def topX(hand: dict[Card, int], deck: dict[Card, int],
         hand[card] += 1
         deck[card] -= 1
     return hand, deck, targets_found
+
+def debugprint(msg: str, debug_mode):
+    if not debug_mode:
+        return
+    print(msg)
