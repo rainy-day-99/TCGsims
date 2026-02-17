@@ -47,8 +47,8 @@ def _create_neighborhood(decks: dict, center: Decklist, env: GameEnvironment):
     decks_added = 0 
     for add, drop in itertools.product(env.variables, repeat = 2):
         nearby_deck = center.clone()
-        nearby_deck.recipe[add.index] = min(add.max, nearby_deck.recipe[add.index] + 1)
-        nearby_deck.recipe[drop.index] = max(drop.min, nearby_deck.recipe[drop.index] - 1)
+        nearby_deck.recipe[add.id] = min(add.max, nearby_deck.recipe[add.id] + 1)
+        nearby_deck.recipe[drop.id] = max(drop.min, nearby_deck.recipe[drop.id] - 1)
         if not nearby_deck.legal:
             continue
         new_key = nearby_deck.key

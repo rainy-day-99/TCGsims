@@ -10,7 +10,7 @@ PERSONA = VanguardCard("Persona Ride", 3, min = 0, max = 0)
 
 # Default variable
 NORMAL = VanguardCard("Normal Unit", 1)
-TARGET = VanguardCard("Target", 2, min = 4, max = 4)
+TARGET = VanguardCard("Target", 2, min = 0, max = 8)
 
 card_types = [NORMAL, TARGET, TRIGGER, OVER, SENTINEL, PERSONA]
 
@@ -35,8 +35,8 @@ def run_game(cards: list[VanguardCard],
             vanguard_grade += 1
             if vanguard_grade == 1 and going_second:
                 hand, main_deck, _ = draw(hand, cards, main_deck)
-        elif hand[PERSONA.index] > 0:
-            hand[PERSONA.index] -= 1
+        elif hand[PERSONA.id] > 0:
+            hand[PERSONA.id] -= 1
             hand, main_deck, _ = draw(hand, cards, main_deck)
 
         # Main phase
@@ -58,8 +58,8 @@ def run_game(cards: list[VanguardCard],
                 break
             damage_taken += 1
 
-    frequency = [0 for i in range(4 + 1)]
-    frequency[hand[TARGET.index]] = 1
+    frequency = [0 for i in range(8 + 1)]
+    frequency[hand[TARGET.id]] = 1
     return tuple([going_second] + frequency)
 
 def _mulligan(hand: list[int], cards: list[VanguardCard], deck: list[int]):
@@ -69,18 +69,18 @@ def _mulligan(hand: list[int], cards: list[VanguardCard], deck: list[int]):
         counts=deck,
         k = _handsize * 2)
     for _ in range(_handsize):
-        hand[_mulligan_range.pop().index] += 1
-    _returned = hand[TRIGGER.index]
-    hand[TRIGGER.index] = 0
+        hand[_mulligan_range.pop().id] += 1
+    _returned = hand[TRIGGER.id]
+    hand[TRIGGER.id] = 0
 
     for _ in range(_returned):
-        hand[_mulligan_range.pop().index] += 1
+        hand[_mulligan_range.pop().id] += 1
     for card in cards:
-        deck[card.index] -= hand[card.index]
+        deck[card.id] -= hand[card.id]
     return hand, deck
 
 def value(data: np.array):
-    hits = 1 - data[:, 1]
+    hits = data[:, 2]
     return hits
 
 """

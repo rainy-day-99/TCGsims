@@ -12,20 +12,23 @@ import emoji
 class Card:
     cards_created = 0
     def __init__(self, name: str, min = 0, max = 99, *flag: str):
+        self.id = Card.cards_created
+        Card.cards_created += 1
+
         self.name = name
         self.min = min
         self.max = max
       
         self.flag = flag
 
-        self.index = Card.cards_created
-        Card.cards_created += 1
     def __repr__(self):
         return self.name
     def __hash__(self):
-        return self.index
+        return self.id
     def __eq__(self, other):
-        return self.index == other.index
+        return self.id == other.id
+    def __int__(self):
+        return self.id
     
 class VanguardCard(Card):
     def __init__(self, name, grade: int, unit = True, trigger = False, min=0, max=99, *flag: str):
@@ -51,7 +54,7 @@ class Decklist:
         initial_values: list[int] = []):
 
         self.cards = cards
-        self.cards.sort(key = lambda card: card.index)
+        self.cards.sort(key = lambda card: card.id)
         if initial_values: 
             self.recipe: list[int] = [amount for amount in initial_values]
         else:
@@ -59,11 +62,11 @@ class Decklist:
             deck_count = sum(layout)
             while deck_count < deck_limit:
                 for card in cards:
-                    if layout[card.index] == card.max:
+                    if layout[card.id] == card.max:
                         continue
                     if deck_count == deck_limit:
                         break
-                    layout[card.index] += 1
+                    layout[card.id] += 1
                     deck_count += 1
             self.recipe: list[int] = layout
         self.max: int = deck_limit

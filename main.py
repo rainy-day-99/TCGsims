@@ -21,7 +21,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['single-test'](game, 1000000)
+decks = search_choice['single-test'](game)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
@@ -32,7 +32,7 @@ for i, deck in enumerate(decks.values()):
       score = np.around(game.Score(deck, statistic='mean'), 4)
       n = deck.games_played
       freq = game.Score(deck, statistic='mode')
-      table.loc[i] = [deck.recipe[card.index] for card in game.variables] + [score, n, mu, freq]
+      table.loc[i] = [deck.recipe[card.id] for card in game.variables] + [score, n, mu, freq]
       total_games_played += deck.games_played
 
 table.sort_values("Score", ascending=False, inplace=True, ignore_index=True)
