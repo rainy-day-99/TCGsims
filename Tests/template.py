@@ -57,6 +57,7 @@ def run_game(cards: list[VanguardCard],
                 break
             hand, main_deck, damage = draw(hand, cards, main_deck, add=False)
             if damage == OVER:
+                hand, main_deck, _ = draw(hand, cards, main_deck)
                 break
             damage_taken += 1
 
