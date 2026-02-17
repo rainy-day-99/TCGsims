@@ -3,14 +3,16 @@ import numpy as np
 from gametools import GameEnvironment, VanguardCard
 from helper import draw
 
+# Default variable
+NORMAL = VanguardCard("Normal Unit", 1)
+TARGET = VanguardCard("Target", 2, min = 0, max = 8)
+
+# Constants
 TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 15, max = 15)
 OVER = VanguardCard("Over Trigger", 0, trigger = True, min = 1, max = 1)
 SENTINEL = VanguardCard("Perfect Guard", 1, min = 0, max = 0)
 PERSONA = VanguardCard("Persona Ride", 3, min = 0, max = 0)
 
-# Default variable
-NORMAL = VanguardCard("Normal Unit", 1)
-TARGET = VanguardCard("Target", 2, min = 0, max = 8)
 
 card_types = [NORMAL, TARGET, TRIGGER, OVER, SENTINEL, PERSONA]
 
