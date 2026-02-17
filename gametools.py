@@ -26,6 +26,8 @@ class Card:
     def __hash__(self):
         return self.id
     def __eq__(self, other):
+        if other == None:
+            return False
         return self.id == other.id
     def __int__(self):
         return self.id
