@@ -27,7 +27,7 @@ def local_search(env: GameEnvironment, max_sims: int = 200000):
             neighborhood, all_decks, priorBestDeck, env, min_sims, max_sims)
         
         if bestDeck == priorBestDeck:
-            min_sims = int(min_sims*1.5)
+            min_sims = int(min_sims*2)
             if decks_tested == 1:
                 decks_tested = 0
         else:
@@ -97,7 +97,7 @@ def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
     
 # Unit test for montecarlo_search
 if __name__ == "__main__":
-    from Premium.gradelock import game
+    from Tests.gradelock import game
     testDeck = game.CreateInitialDeck()
     test_pool = dict()
 
