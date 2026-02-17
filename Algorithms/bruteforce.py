@@ -21,8 +21,8 @@ def _expand(center: Decklist, env: GameEnvironment):
         for deck in decks:
             for add, drop in itertools.product(env.variables, repeat = 2):
                 nearby_deck = deck.clone()
-                nearby_deck.recipe[add] = min(add.max, nearby_deck.recipe[add] + 1)
-                nearby_deck.recipe[drop] = max(drop.min, nearby_deck.recipe[drop] - 1)
+                nearby_deck.recipe[add.index] = min(add.max, nearby_deck.recipe[add.index] + 1)
+                nearby_deck.recipe[drop.index] = max(drop.min, nearby_deck.recipe[drop.index] - 1)
                 if not nearby_deck.legal:
                     continue
                 if nearby_deck in new_decks:
