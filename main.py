@@ -1,4 +1,4 @@
-from Arkhite.basic import game
+from Tests.template import game
 from Algorithms.montecarlo import local_search
 from Algorithms.bruteforce import broad_search
 
@@ -21,7 +21,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['broad-search'](game, 300000)
+decks = search_choice['single-test'](game, 1000000)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
@@ -32,7 +32,7 @@ for i, deck in enumerate(decks.values()):
       score = np.around(game.Score(deck, statistic='mean'), 4)
       n = deck.games_played
       freq = game.Score(deck, statistic='mode')
-      table.loc[i] = [deck.recipe[card] for card in game.variables] + [score, n, mu, freq]
+      table.loc[i] = [deck.recipe[card.index] for card in game.variables] + [score, n, mu, freq]
       total_games_played += deck.games_played
 
 table.sort_values("Score", ascending=False, inplace=True, ignore_index=True)
@@ -48,7 +48,7 @@ mean_as_list = pd.DataFrame(table["Mean"].to_list())
 table.drop("Mean", axis=1, inplace=True)
 output = table.join(mean_as_list)
 
-with pd.ExcelWriter("ExcelOutputs/arkhite.xlsx", engine="openpyxl", 
-                    mode="a", if_sheet_exists="replace"
-                    ) as w:
-      output.to_excel(w, sheet_name="Valtrossa and Pantera")
+# with pd.ExcelWriter("ExcelOutputs/arkhite.xlsx", engine="openpyxl", 
+#                     mode="a", if_sheet_exists="replace"
+#                     ) as w:
+#       output.to_excel(w, sheet_name="Valtrossa and Pantera")
