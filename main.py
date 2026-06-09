@@ -1,4 +1,4 @@
-from Tests.template import game
+from Tests.discard import game
 from Algorithms.montecarlo import local_search
 from Algorithms.bruteforce import broad_search
 
@@ -21,7 +21,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['single-test'](game)
+decks = search_choice['local-search'](game)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
@@ -48,7 +48,8 @@ mean_as_list = pd.DataFrame(table["Mean"].to_list())
 table.drop("Mean", axis=1, inplace=True)
 output = table.join(mean_as_list)
 
-# with pd.ExcelWriter("ExcelOutputs/arkhite.xlsx", engine="openpyxl", 
-#                     mode="a", if_sheet_exists="replace"
+# with pd.ExcelWriter("ExcelOutputs/ridefodder.xlsx", engine="openpyxl", 
+#                     mode="a", 
+#                     if_sheet_exists="replace"
 #                     ) as w:
-#       output.to_excel(w, sheet_name="Valtrossa and Pantera")
+#       output.to_excel(w, sheet_name="with draws")
