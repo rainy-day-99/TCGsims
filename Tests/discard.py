@@ -29,7 +29,7 @@ def run_game(cards: list[VanguardCard],
     utility = 0
     for turn in range(last_turn):        
         # Start of turn
-        hand, main_deck, _ = draw(hand, cards, main_deck)
+        hand, main_deck, _ = draw(hand, main_deck)
         main_deck[NORMAL.id] -= 1
 
         # Ride step
@@ -46,13 +46,13 @@ def run_game(cards: list[VanguardCard],
             else:
                 hand[TRIGGER.id] -= 1
             if vanguard_grade == 1 and going_second:
-                hand, main_deck, _ = draw(hand, cards, main_deck)
+                hand, main_deck, _ = draw(hand, main_deck)
 
         # Main phase
 
         ## Exit before last drive checks
         if turn + 1 == last_turn:
-            # hand, main_deck, _ = draw(hand, cards, main_deck)
+            # hand, main_deck, _ = draw(hand, main_deck)
             return(utility - hand[FODDER.id])
 
         # Battle phase
@@ -60,14 +60,14 @@ def run_game(cards: list[VanguardCard],
         if opponents_grade == 0:
             drives = 0
         for _ in range(drives):
-            hand, main_deck, _ = draw(hand, cards, main_deck)
+            hand, main_deck, _ = draw(hand, main_deck)
 
         # Opponent's turn
         opponents_grade += 1
         for _ in range(random.choice([1, 2])):
             if damage_taken == 5:
                 break
-            hand, main_deck, _ = draw(hand, cards, main_deck, add=False)
+            hand, main_deck, _ = draw(hand, main_deck, add=False)
             damage_taken += 1
 
 

@@ -4,7 +4,6 @@ from os import get_terminal_size
 from scipy.stats import ttest_ind
 import itertools
 import numpy as np
-import emoji
 
 def local_search(env: GameEnvironment, max_sims: int = 200000):
     priorBestDeck = env.CreateInitialDeck()
@@ -72,7 +71,7 @@ def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
         if (games_to_play + deck.games_played) >= maximum:
             games_to_play = max(maximum - deck.games_played, 0)
         if games_to_play == 0:
-            msg = emoji.emojize(f":stop_sign: {deck} has reached simulation limit")
+            msg = f"{deck} has reached simulation limit"
             print(msg)
             continue
         if deck.games_played > 0:
@@ -80,7 +79,7 @@ def _test_pool(keys: list, decks: dict, bestDeck: Decklist,
                                      env.Score(decks[bestDeck.key]), 
                                      equal_var=False)
             if compareMeans.pvalue < alpha: 
-                msg = emoji.emojize(f":fast-forward_button: {deck} skipped for time")
+                msg = f":fast-forward_button: {deck} skipped for time"
                 print(msg)
                 continue
         else: 
@@ -101,8 +100,8 @@ if __name__ == "__main__":
     testDeck = game.CreateInitialDeck()
     test_pool = dict()
 
-    passed = emoji.emojize(":check_mark_button:")
-    failed = emoji.emojize(":cross_mark:")
+    passed = 1
+    failed = 0
 
     neighbors_1, pool, decks_made_1 = _create_neighborhood(
         test_pool, testDeck, game)

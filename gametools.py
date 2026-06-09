@@ -1,7 +1,6 @@
 from functools import total_ordering
 import numpy as np
 from scipy.stats import mode
-import emoji
 """
       Contains three classes:
       - Card: a generic object for holding card info 
@@ -10,10 +9,10 @@ import emoji
 """
 
 class Card:
-    cards_created = 0
+    index = 0
     def __init__(self, name: str, min = 0, max = 99, *flag: str):
-        self.id = Card.cards_created
-        Card.cards_created += 1
+        self.id = Card.index
+        Card.index += 1
 
         self.name = name
         self.min = min
@@ -149,21 +148,18 @@ class GameEnvironment:
 
     # Generic methods, since they will differ depending on deck played
     def RunGames(self, deck: Decklist, number_of_games: int, debug = False):
-        done = emoji.emojize(":green_circle:")
-        playing = emoji.emojize(":hollow_red_circle:")
-        stopped = emoji.emojize(":stop_sign:")
         if number_of_games == 0:
-            print(f"{stopped} Played no games with {deck}")
+            print(f"Played no games with {deck}")
             return
         game_output = []
 
         for g in range(number_of_games):
-            print(f"{playing} Played {g}/{number_of_games} games with {deck}", end = "\r", flush=True)
+            print(f"Played {g}/{number_of_games} games with {deck}", end = "\r", flush=True)
             result = self.run_game(deck.cards, deck.recipe.copy(), g%2, self.cache, debug)
             game_output.append(result)
         if self.cache:
             print(f"Cache size: {len(self.cache.keys())}")
-        print(f"\r{done} Played {number_of_games}/{number_of_games} games with {deck}", end = "\n", flush=True)
+        print(f"\rPlayed {number_of_games}/{number_of_games} games with {deck}", end = "\n", flush=True)
         
         if deck.results.size == 0:
             deck.results = np.array(game_output)
