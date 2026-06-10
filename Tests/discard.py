@@ -6,12 +6,11 @@ from helper import draw
 # Default variable
 NORMAL = VanguardCard("Normal Unit", 1)
 FODDER = VanguardCard("Ride Fodder", 2, max = 12)
-GANCELOT = VanguardCard("Gancelot", 2, min = 0, max = 0)
 
 # Constants
 TRIGGER = VanguardCard("Trigger Unit", 0, trigger = True, min = 16, max = 16)
 
-card_types = [NORMAL, FODDER, GANCELOT, TRIGGER]
+card_types = [NORMAL, FODDER, TRIGGER]
 
 def run_game(cards: list[VanguardCard], 
              main_deck: list[int], 
@@ -19,8 +18,8 @@ def run_game(cards: list[VanguardCard],
              cache = {}, debug = False):
 
     # Mulligan step
-    hand = [0 for card in cards]
-    hand, main_deck = _mulligan(hand, cards, main_deck)
+    hand = [0 for _ in main_deck]
+    hand, main_deck = _mulligan(hand, main_deck)
     
     vanguard_grade = 0
     last_turn = 4
@@ -30,16 +29,12 @@ def run_game(cards: list[VanguardCard],
     for turn in range(last_turn):        
         # Start of turn
         hand, main_deck, _ = draw(hand, main_deck)
-        main_deck[NORMAL.id] -= 1
 
         # Ride step
         if vanguard_grade < 3:
             vanguard_grade += 1
             if hand[FODDER.id] > 0:
                 hand[FODDER.id] -= 1
-                utility += 1
-            elif hand[GANCELOT.id] > 0:
-                hand[GANCELOT.id] -= 1
                 utility += 1
             elif hand[NORMAL.id] > 0:
                 hand[NORMAL.id] -= 1
@@ -71,21 +66,22 @@ def run_game(cards: list[VanguardCard],
             damage_taken += 1
 
 
-def _mulligan(hand: list[int], cards: list[VanguardCard], deck: list[int]):
+def _mulligan(hand: list[int], deck: list[int]):
     _handsize = 5
+    _indices = range(len(deck))
     _mulligan_range = random.sample(
-        population=cards, 
+        population=_indices, 
         counts=deck,
         k = _handsize * 2)
     for _ in range(_handsize):
-        hand[_mulligan_range.pop().id] += 1
+        hand[_mulligan_range.pop()] += 1
     _returned = hand[TRIGGER.id]
     hand[TRIGGER.id] = 0
 
     for _ in range(_returned):
-        hand[_mulligan_range.pop().id] += 1
-    for card in cards:
-        deck[card.id] -= hand[card.id]
+        hand[_mulligan_range.pop()] += 1
+    for i in _indices:
+        deck[i] -= hand[i]
     return hand, deck
 
 def difference(data: np.array):

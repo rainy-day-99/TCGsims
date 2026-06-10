@@ -21,7 +21,7 @@ search_choice = {
 }
 
 start = time()
-decks = search_choice['local-search'](game)
+decks = search_choice['broad-search'](game)
 duration = str(timedelta(seconds = round(time() - start)))
 
 column_names = game.variables + ['Score', 'n', 'Mean', 'Mode']
@@ -36,12 +36,12 @@ for i, deck in enumerate(decks.values()):
       total_games_played += deck.games_played
 
 table.sort_values("Score", ascending=False, inplace=True, ignore_index=True)
-top10 = table[:10]
+top_decks = table[:12]
 
 print("".center(get_terminal_size()[0], '-'))
 print("   Final results   ".center(get_terminal_size()[0], ' '))
 print("".center(get_terminal_size()[0], '-'))
-print(top10)
+print(top_decks)
 print(f"\n{total_games_played} total simulations, finished in {duration}")
 
 mean_as_list = pd.DataFrame(table["Mean"].to_list())
